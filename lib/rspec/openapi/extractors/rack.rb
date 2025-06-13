@@ -6,9 +6,10 @@ class << RSpec::OpenAPI::Extractors::Rack = Object.new
   # @param [RSpec::Core::Example] example
   # @return Array
   def request_attributes(request, example)
-    metadata = example.metadata[:openapi] || {}
+    metadata = merge_openapi_metadata(example.metadata)
     summary = metadata[:summary] || RSpec::OpenAPI.summary_builder.call(example)
     tags = metadata[:tags] || RSpec::OpenAPI.tags_builder.call(example)
+    formats = metadata[:formats] || RSpec::OpenAPI.formats_builder.curry.call(example)
     operation_id = metadata[:operation_id]
     required_request_params = metadata[:required_request_params] || []
     security = metadata[:security]
@@ -18,7 +19,19 @@ class << RSpec::OpenAPI::Extractors::Rack = Object.new
     raw_path_params = request.path_parameters
     path = request.path
     summary ||= "#{request.method} #{path}"
-    [path, summary, tags, operation_id, required_request_params, raw_path_params, description, security, deprecated, params_description]
+    [
+      path,
+      summary,
+      tags,
+      operation_id,
+      required_request_params,
+      raw_path_params,
+      description,
+      security,
+      deprecated,
+      formats,
+      params_description,
+    ]
   end
 
   # @param [RSpec::ExampleGroups::*] context
@@ -28,5 +41,25 @@ class << RSpec::OpenAPI::Extractors::Rack = Object.new
     response = ActionDispatch::TestResponse.new(*context.last_response.to_a)
 
     [request, response]
+  end
+
+  private
+
+  def merge_openapi_metadata(metadata)
+    collect_openapi_metadata(metadata).reduce({}, &:merge)
+  end
+
+  def collect_openapi_metadata(metadata)
+    [].tap do |result|
+      current = metadata
+
+      while current
+        [current[:example_group], current].each do |meta|
+          result.unshift(meta[:openapi]) if meta&.dig(:openapi)
+        end
+
+        current = current[:parent_example_group]
+      end
+    end
   end
 end
