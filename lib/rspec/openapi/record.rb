@@ -14,6 +14,7 @@ RSpec::OpenAPI::Record = Struct.new(
   :tags,                  # @param [Array]   - ["Status"]
   :operation_id,          # @param [String]   - "request-1234"
   :description,           # @param [String]  - "returns a status"
+  :params_description,    # @param[Hash]     - { "key" => "description" }
   :security,              # @param [Array]  - [{securityScheme1: []}]
   :deprecated,            # @param [Boolean] - true
   :status,                # @param [Integer] - 200
