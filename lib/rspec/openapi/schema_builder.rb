@@ -73,6 +73,7 @@ class << RSpec::OpenAPI::SchemaBuilder = Object.new
         name: build_parameter_name(key, value),
         in: 'path',
         required: true,
+        description: record.params_description[key],
         schema: build_property(try_cast(value)),
         example: (try_cast(value) if example_enabled?),
       }.compact
@@ -83,6 +84,7 @@ class << RSpec::OpenAPI::SchemaBuilder = Object.new
         name: build_parameter_name(key, value),
         in: 'query',
         required: record.required_request_params.include?(key),
+        description: record.params_description[key],
         schema: build_property(try_cast(value)),
         example: (try_cast(value) if example_enabled?),
       }.compact
@@ -94,6 +96,7 @@ class << RSpec::OpenAPI::SchemaBuilder = Object.new
         in: 'header',
         required: true,
         schema: build_property(try_cast(value)),
+        description: record.params_description[key],
         example: (try_cast(value) if example_enabled?),
       }.compact
     end
